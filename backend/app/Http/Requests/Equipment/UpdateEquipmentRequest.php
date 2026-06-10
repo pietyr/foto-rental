@@ -22,7 +22,10 @@ class UpdateEquipmentRequest extends FormRequest
             'brand' => ['nullable', 'string', 'max:255'],
             'model' => ['nullable', 'string', 'max:255'],
             'price_per_day' => ['sometimes', 'numeric', 'min:0'],
-            'status' => ['sometimes', Rule::enum(EquipmentStatus::class)],
+            'status' => ['sometimes', Rule::in([
+                EquipmentStatus::Available->value,
+                EquipmentStatus::Maintenance->value,
+            ])],
         ];
     }
 
@@ -32,5 +35,23 @@ class UpdateEquipmentRequest extends FormRequest
             'category_id.exists' => 'Wybrana kategoria nie istnieje.',
             'price_per_day.min' => 'Cena nie może być ujemna.',
         ];
+    }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            if (! $this->has('status')) {
+                return;
+            }
+
+            $equipment = $this->route('equipment');
+
+            if ($equipment->status === EquipmentStatus::Rented) {
+                $validator->errors()->add(
+                    'status',
+                    'Sprzęt jest wypożyczony — status zmieniasz w panelu wypożyczeń.',
+                );
+            }
+        });
     }
 }

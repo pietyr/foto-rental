@@ -32,6 +32,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/equipment/{equipment}', [EquipmentController::class, 'update']);
         Route::delete('/equipment/{equipment}', [EquipmentController::class, 'destroy']);
 
+        Route::post('/rentals/manage', [RentalController::class, 'storeAsAdmin']);
         Route::put('/rentals/{rental}', [RentalController::class, 'update']);
         Route::get('/users', [UserController::class, 'index']);
     });

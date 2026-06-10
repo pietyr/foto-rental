@@ -22,7 +22,10 @@ class StoreEquipmentRequest extends FormRequest
             'brand' => ['nullable', 'string', 'max:255'],
             'model' => ['nullable', 'string', 'max:255'],
             'price_per_day' => ['required', 'numeric', 'min:0'],
-            'status' => ['sometimes', Rule::enum(EquipmentStatus::class)],
+            'status' => ['sometimes', Rule::in([
+                EquipmentStatus::Available->value,
+                EquipmentStatus::Maintenance->value,
+            ])],
         ];
     }
 

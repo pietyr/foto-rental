@@ -86,15 +86,18 @@ function startEdit(item: Equipment): void {
 async function submit(): Promise<void> {
   clearErrors();
 
-  const payload = {
+  const payload: Record<string, unknown> = {
     category_id: Number(form.category_id),
     name: form.name,
     description: form.description || null,
     brand: form.brand || null,
     model: form.model || null,
     price_per_day: Number(form.price_per_day),
-    status: form.status,
   };
+
+  if (form.status !== 'rented') {
+    payload.status = form.status;
+  }
 
   try {
     if (editingId.value) {
@@ -208,16 +211,21 @@ onMounted(loadData);
 
           <div class="space-y-2">
             <Label>Status</Label>
-            <Select v-model="form.status">
+            <Select v-model="form.status" :disabled="form.status === 'rented'">
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="available">Dostępny</SelectItem>
-                <SelectItem value="rented">Wypożyczony</SelectItem>
                 <SelectItem value="maintenance">Serwis</SelectItem>
               </SelectContent>
             </Select>
+            <p v-if="form.status === 'rented'" class="text-sm text-muted-foreground">
+              Sprzęt jest wypożyczony — status zmieniasz w panelu wypożyczeń.
+            </p>
+            <p v-if="fieldError('status')" class="text-sm text-destructive">
+              {{ fieldError('status') }}
+            </p>
           </div>
 
           <div class="flex gap-2 sm:col-span-2">

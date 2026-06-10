@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Enums\EquipmentStatus;
 use App\Enums\RentalStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Rental\AdminStoreRentalRequest;
 use App\Http\Requests\Rental\StoreRentalRequest;
 use App\Http\Requests\Rental\UpdateRentalRequest;
 use App\Models\Rental;
@@ -53,6 +54,28 @@ class RentalController extends Controller
             'user_id' => $request->user()->id,
             'status' => RentalStatus::Pending,
         ]);
+
+        $rental->load(['equipment.category', 'user']);
+
+        return response()->json(['data' => $rental], 201);
+    }
+
+    public function storeAsAdmin(AdminStoreRentalRequest $request): JsonResponse
+    {
+        $status = RentalStatus::from($request->validated('status'));
+
+        $rental = DB::transaction(function () use ($request, $status) {
+            $rental = Rental::create([
+                ...$request->validated(),
+                'status' => $status,
+            ]);
+
+            if ($status === RentalStatus::Active) {
+                $rental->equipment->update(['status' => EquipmentStatus::Rented]);
+            }
+
+            return $rental;
+        });
 
         $rental->load(['equipment.category', 'user']);
 

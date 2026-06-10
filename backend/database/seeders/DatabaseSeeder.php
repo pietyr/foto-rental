@@ -3,9 +3,11 @@
 namespace Database\Seeders;
 
 use App\Enums\EquipmentStatus;
+use App\Enums\RentalStatus;
 use App\Enums\UserRole;
 use App\Models\Category;
 use App\Models\Equipment;
+use App\Models\Rental;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -20,14 +22,14 @@ class DatabaseSeeder extends Seeder
             'role' => UserRole::Admin,
         ]);
 
-        User::factory()->create([
+        $jan = User::factory()->create([
             'name' => 'Jan Kowalski',
             'email' => 'user@foto-rental.test',
             'password' => 'password',
             'role' => UserRole::User,
         ]);
 
-        User::factory()->create([
+        $anna = User::factory()->create([
             'name' => 'Anna Nowak',
             'email' => 'anna@foto-rental.test',
             'password' => 'password',
@@ -73,7 +75,7 @@ class DatabaseSeeder extends Seeder
                 'brand' => 'Fujifilm',
                 'model' => 'X-T5',
                 'price_per_day' => 90.00,
-                'status' => EquipmentStatus::Rented,
+                'status' => EquipmentStatus::Available,
             ],
             [
                 'category_id' => $lenses->id,
@@ -149,8 +151,28 @@ class DatabaseSeeder extends Seeder
             ],
         ];
 
-        foreach ($equipment as $item) {
-            Equipment::create($item);
-        }
+        $createdEquipment = collect($equipment)->map(
+            fn (array $item) => Equipment::create($item),
+        );
+
+        $fujifilm = $createdEquipment->firstWhere('name', 'Fujifilm X-T5');
+        $sony = $createdEquipment->firstWhere('name', 'Sony A7 III');
+
+        Rental::create([
+            'user_id' => $jan->id,
+            'equipment_id' => $fujifilm->id,
+            'start_date' => now()->subDays(2)->toDateString(),
+            'end_date' => now()->addDays(5)->toDateString(),
+            'status' => RentalStatus::Active,
+        ]);
+        $fujifilm->update(['status' => EquipmentStatus::Rented]);
+
+        Rental::create([
+            'user_id' => $anna->id,
+            'equipment_id' => $sony->id,
+            'start_date' => now()->addDay()->toDateString(),
+            'end_date' => now()->addDays(3)->toDateString(),
+            'status' => RentalStatus::Pending,
+        ]);
     }
 }
