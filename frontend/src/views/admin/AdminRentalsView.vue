@@ -29,7 +29,7 @@ const editStatus = ref<RentalStatus>('pending');
 const editEndDate = ref('');
 
 async function loadRentals(): Promise<void> {
-  const response = await api.get<{ data: Rental[] }>('/rentals');
+  const response = await api.get<{ data: Rental[] }>('/rentals?all=1');
   rentals.value = response.data;
 }
 

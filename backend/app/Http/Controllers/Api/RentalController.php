@@ -20,7 +20,11 @@ class RentalController extends Controller
             ->with(['equipment.category', 'user'])
             ->latest();
 
-        if (! $request->user()->isAdmin()) {
+        if ($request->boolean('all')) {
+            if (! $request->user()->isAdmin()) {
+                return response()->json(['message' => 'Brak uprawnień.'], 403);
+            }
+        } else {
             $query->where('user_id', $request->user()->id);
         }
 
