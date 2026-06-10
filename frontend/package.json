@@ -1,6 +1,5 @@
 {
-  "name": "frontend",
-  "version": "0.0.0",
+  "name": "foto-rental",
   "private": true,
   "type": "module",
   "scripts": {
